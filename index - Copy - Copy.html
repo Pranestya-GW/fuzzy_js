@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Fuzzy - harga Beasiswa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no,maximum-scale=1,minimum-scale=1">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container" style="margin-top: 30px;max-width: 600px;position: relative;">
+      <hr>
+
+      <h1>Fuzzy <br><small>Studi Kasus: harga Beasiswa</small></h1>
+      <div class="form-group">
+        <label for="inwarna">Warna 20-75 (rb)</label>
+        <input type="text" name="inwarna" id="inwarna" value="50" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="inmotif">Motif 20-150 (rb)</label>
+        <input type="text" name="inmotif" id="inmotif" value="50" class="form-control">
+      </div>
+
+
+      <div class="form-group">
+        <label for="inukir">Jenis Ukiran 20-200 (rb)</label>
+        <input type="text" name="inukir" id="inukir" value="50" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="inkayu">Harga Kayu 10-100  (rb)</label>
+        <input type="text" name="inkayu" id="inkayu" value="50" class="form-control">
+      </div>
+
+
+      <button class="btn btn-primary btn-block btn-lg" id="btnProses" name="btnProses">Proses</button>
+      <div id="divOut"></div>
+
+      <hr>
+      <img src="img/mamdani.jpg" style="width: 100%;border: 1px solid #eef;">
+      <img src="img/sugeno.jpg" style="width: 100%;border: 1px solid #eef;">
+
+      <hr>
+      <div class="alert alert-success">
+        <strong>REFERENSI:</strong>
+        <a href="pdf/fuzzy - contoh kasus beasiswa.pdf" target="_blank">fuzzy - contoh kasus beasiswa.pdf</a>
+      </div>
+      </div>
+      <hr>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="lib/jquery/jquery.min.js" type="text/javaScript"></script>
+    <script src="lib/bootstrap/js/bootstrap.min.js" type="text/javaScript"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!-- <script src="js/bootstrap.min.js"></script> -->
+    <script type="text/javascript">
+      function inDiv(s) {
+        return ("<div>"+ s + "</div>");
+      }
+      function lbDiv(lbl,s) {
+        return ('<div class="label label-' + lbl + '">' + s +  '</div>');
+      }
+      function alDiv(lbl,s) {
+        return ('<div class="alert alert-' + lbl + '">' + s +  '</div>');
+    }
+    var linier_turun = function(va,vb) {
+    this.a = va;
+    this.b = vb;
+    this.u = function (x) {
+    var a=this.a;
+    var b=this.b;
+    var y=0;
+    if ( (x<a) ) y = 1;
+    else if ( (x=>a) && (x<=b) ) y = (b-x)/(b-a);
+    else if ( (x>b) ) y = 0;
+    return y;
+    }
+    }
+    var linier_naik = function(va,vb) {
+    this.a = va;
+    this.b = vb;
+    this.u = function (x) {
+    var a=this.a;
+    var b=this.b;
+    var y=0;
+    if ( (x<a) ) y = 0;
+    else if ( (x=>a) && (x<=b) ) y = (x-a)/(b-a);
+    else if ( (x>b) ) y = 1;
+    return y;
+    }
+    }
+    var segitiga = function(va,vb,vc) {
+    this.a = va;
+    this.b = vb;
+    this.c = vc;
+    this.u = function (x) {
+    var a=this.a;
+    var b=this.b;
+    var c=this.c;
+    var y=0;
+    if ( (x<a) || (x>c) ) y = 0;
+    else if ( (x=>a) && (x<=b) ) y = (x-a)/(b-a);
+    else if ( (x>b) && (x<=c) ) y = (c-x)/(c-b);
+    return y;
+    }
+    }
+    var trapesium = function(va,vb,vc,vd) {
+    this.a = va;
+    this.b = vb;
+    this.c = vc;
+    this.d = vd;
+    this.u = function (x) {
+    var a=this.a;
+    var b=this.b;
+    var c=this.c;
+    var d=this.d;
+    var y=0;
+    if ( (x<a) || (x>d) ) y=0;
+    else if ( (x>=a) && (x<=b) ) y = (x-a)/(b-a);
+    else if ( (x>b) && (x<c) ) y=1;
+    else if ( (x>=c) && (x<=d) ) y = (d-x)/(d-c);
+    return y;
+    }
+    }
+
+    function mf_warna(x) {
+    var sintetis = new linier_turun(25,50);
+    var alam = new linier_naik(25,50);
+   
+    //return [buruk.u(x), cukup.u(x), bagus.u(x)]
+    return {
+    "sintetis": sintetis.u(x),
+    "alam": alam.u(x)
+    };
+    }
+
+    function mf_motif(x) {
+    var sederhana = new linier_turun(40,60);
+    var rumit = new segitiga(50,75,90);
+    var sangatrumit = new linier_naik(75,100);
+    //return [keci1.u(x), sedang.u(x), besar.u(x), sangatbesar.u(x)];
+    // ;
+    return {
+    "sederhana": sederhana.u(x) ,
+    "rumit": rumit.u(x) ,
+    "sangatrumit": sangatrumit.u(x) 
+    };
+    }
+
+
+  	function mf_ukir(x) {
+    var tembus = new linier_turun(50,80);
+    var timbul = new segitiga(50,90,120);
+    var arca = new linier_naik(100,150);
+    //return [keci1.u(x), sedang.u(x), besar.u(x), sangatbesar.u(x)];
+    // ;
+    return {
+    "tembus": tembus.u(x) ,
+    "timbul": timbul.u(x) ,
+    "arca": arca.u(x) 
+    };
+    }
+
+
+    function mf_kayu(x) {
+    var rendah = new linier_turun(20,30);
+    var sedang = new segitiga(20 ,30,60);
+    var tinggi = new linier_naik(50,70);
+    //return [keci1.u(x), sedang.u(x), besar.u(x), sangatbesar.u(x)];
+    // ;
+    return {
+    "rendah": rendah.u(x) ,
+    "sedang": sedang.u(x) ,
+    "tinggi": tinggi.u(x) 
+    };
+    }
+
+
+
+    function mf_harga(x) {
+    var murah = new linier_turun(65,100);
+    var menengah = new segitiga(65,100,250);
+    var mahal = new linier_naik(200,300);
+    //return [keci1.u(x), sedang.u(x), besar.u(x), sangatbesar.u(x)];
+    // ;
+    return {
+    "murah": murah.u(x) ,
+    "menengah": menengah.u(x) ,
+    "mahal": mahal.u(x) 
+    };
+    }
+
+
+    function mf_harga_singleton() {
+    return {
+    "murah": 65,
+    "menengah":100,
+    "mahal": 300
+    };
+    }
+
+    function fmin(a,b,c,d) {
+    return Math.min(a,b,c,d);
+    }
+    function fmax(arr) { //arr
+    var a=0;
+    for (var i in arr) {
+    a = Math.max(a,arr[i]);
+    }
+    return a;
+   }
+    function fmaxMin(a,b,c,d,e,f) {
+    return Math.max( Math.min(a,b), Math.min(c,d), Math.min(e,f));
+    }
+    function fcog(a, b, c, d) {
+    for (var i=0; i<i; i+=10) {
+    }
+    }
+
+
+    function klik_proses() {
+    //a1ert('$k');
+
+    //var warna = 3;
+    var warna = parseFloat( $('#inwarna').val() );
+    console.log( 'warna : ' + warna );
+    warna = mf_warna( warna );
+    console.log( warna );
+
+    //var motif = ;
+    var motif = parseFloat( $('#inmotif').val() );
+    console.log( 'motif : ' + motif );
+    motif = mf_motif( motif );
+    console.log( motif );
+
+
+     //var ukir = ;
+    var ukir = parseFloat( $('#inukir').val() );
+    console.log( 'ukir : ' + ukir );
+    ukir = mf_ukir( ukir);
+    console.log( ukir );
+
+    //var kayu = 10;
+    var kayu = parseFloat( $('#inkayu').val() );
+    console.log( 'kayu : ' + kayu );
+    kayu = mf_kayu( kayu);
+    console.log( kayu );
+
+
+
+    var murah = [];
+    var menengah = [];
+    var mahal = [];
+
+
+
+    //aturan / rules
+    murah.push( fmin( warna.sintetis, motif.sederhana,ukir.tembus,kayu.rendah ) );
+    murah.push( fmin( warna.sintetis, motif.sederhana,ukir.tembus,kayu.sedang ) );
+    menengah.push( fmin( warna.sintetis, motif.sederhana,ukir.tembus,kayu.tinggi ) ); //3
+
+    murah.push( fmin( warna.sintetis, motif.sederhana,ukir.timbul,kayu.rendah ) );
+    murah.push( fmin( warna.sintetis, motif.sederhana,ukir.timbul,kayu.sedang ) );
+    menengah.push( fmin( warna.sintetis, motif.sederhana,ukir.timbul,kayu.tinggi ) );//6
+
+    murah.push( fmin( warna.sintetis, motif.sederhana,ukir.arca,kayu.rendah ) );
+    murah.push( fmin( warna.sintetis, motif.sederhana,ukir.arca,kayu.sedang ) );
+    menengah.push( fmin( warna.sintetis, motif.sederhana,ukir.arca,kayu.tinggi ) );//9
+
+    murah.push( fmin( warna.sintetis, motif.rumit,ukir.tembus,kayu.rendah ) );
+    murah.push( fmin( warna.sintetis, motif.rumit,ukir.tembus,kayu.sedang ) );
+    menengah.push( fmin( warna.sintetis, motif.rumit,ukir.tembus,kayu.tinggi ) );//12
+
+    murah.push( fmin( warna.sintetis, motif.rumit,ukir.timbul,kayu.rendah ) );
+    menengah.push( fmin( warna.sintetis, motif.rumit,ukir.timbul,kayu.sedang ) );
+    menengah.push( fmin( warna.sintetis, motif.rumit,ukir.timbul,kayu.tinggi ) );//15
+
+    menengah.push( fmin( warna.sintetis, motif.rumit,ukir.arca,kayu.rendah ) );
+    menengah.push( fmin( warna.sintetis, motif.rumit,ukir.arca,kayu.sedang ) );
+    mahal.push( fmin( warna.sintetis, motif.rumit,ukir.arca,kayu.tinggi ) );//18
+
+    menengah.push( fmin( warna.sintetis, motif.sangatrumit,ukir.tembus,kayu.rendah ) );
+    menengah.push( fmin( warna.sintetis, motif.sangatrumit,ukir.tembus,kayu.sedang ) );
+    mahal.push( fmin( warna.sintetis, motif.sangatrumit,ukir.tembus,kayu.tinggi ) );//21
+
+    menengah.push( fmin( warna.sintetis, motif.sangatrumit,ukir.timbul,kayu.rendah ) );
+    menengah.push( fmin( warna.sintetis, motif.sangatrumit,ukir.timbul,kayu.sedang ) );
+    mahal.push( fmin( warna.sintetis, motif.sangatrumit,ukir.timbul,kayu.tinggi ) );//24
+
+    menengah.push( fmin( warna.sintetis, motif.sangatrumit,ukir.arca,kayu.rendah ) );
+   	mahal.push( fmin( warna.sintetis, motif.sangatrumit,ukir.arca,kayu.sedang ) );
+    mahal.push( fmin( warna.sintetis, motif.sangatrumit,ukir.arca,kayu.tinggi ) );//27
+
+
+    murah.push( fmin( warna.alam, motif.sederhana,ukir.tembus,kayu.rendah ) );
+    murah.push( fmin( warna.alam, motif.sederhana,ukir.tembus,kayu.sedang ) );
+    menengah.push( fmin( warna.alam, motif.sederhana,ukir.tembus,kayu.tinggi ) );//30
+
+    murah.push( fmin( warna.alam, motif.sederhana,ukir.timbul,kayu.rendah ) );
+    murah.push( fmin( warna.alam, motif.sederhana,ukir.timbul,kayu.sedang ) );
+    menengah.push( fmin( warna.alam, motif.sederhana,ukir.timbul,kayu.tinggi ) );//33
+
+    murah.push( fmin( warna.alam, motif.sederhana,ukir.arca,kayu.rendah ) );
+    menengah.push( fmin( warna.alam, motif.sederhana,ukir.arca,kayu.sedang ) );
+    menengah.push( fmin( warna.alam, motif.sederhana,ukir.arca,kayu.tinggi ) );//36
+
+    murah.push( fmin( warna.alam, motif.rumit,ukir.tembus,kayu.rendah ) );
+    menengah.push( fmin( warna.alam, motif.rumit,ukir.tembus,kayu.sedang ) );
+    menengah.push( fmin( warna.alam, motif.rumit,ukir.tembus,kayu.tinggi ) );//39
+
+    menengah.push( fmin( warna.alam, motif.rumit,ukir.timbul,kayu.rendah ) );
+    menengah.push( fmin( warna.alam, motif.rumit,ukir.timbul,kayu.sedang ) );
+    mahal.push( fmin( warna.alam, motif.rumit,ukir.timbul,kayu.tinggi ) );//42
+
+    menengah.push( fmin( warna.alam, motif.rumit,ukir.arca,kayu.rendah ) );
+    mahal.push( fmin( warna.alam, motif.rumit,ukir.arca,kayu.sedang ) );
+    mahal.push( fmin( warna.alam, motif.rumit,ukir.arca,kayu.tinggi ) );//45
+
+    menengah.push( fmin( warna.alam, motif.sangatrumit,ukir.tembus,kayu.rendah ) );
+    mahal.push( fmin( warna.alam, motif.sangatrumit,ukir.tembus,kayu.sedang ) );
+    mahal.push( fmin( warna.alam, motif.sangatrumit,ukir.tembus,kayu.tinggi ) );//48
+
+    menengah.push( fmin( warna.alam, motif.sangatrumit,ukir.timbul,kayu.rendah ) );
+    mahal.push( fmin( warna.alam, motif.sangatrumit,ukir.timbul,kayu.sedang ) );
+    mahal.push( fmin( warna.alam, motif.sangatrumit,ukir.timbul,kayu.tinggi ) );//51
+
+    menengah.push( fmin( warna.alam, motif.sangatrumit,ukir.arca,kayu.rendah ) );
+    mahal.push( fmin( warna.alam, motif.sangatrumit,ukir.arca,kayu.sedang ) );
+    mahal.push( fmin( warna.alam, motif.sangatrumit,ukir.arca,kayu.tinggi ) );//54
+
+
+
+    murah = fmax(murah);
+    menengah = fmax(menengah);
+    mahal = fmax(mahal);
+
+    var sa = 0;
+    var sb = 0;
+    var aa = 10;
+    var zz = 500;
+    for (var i=aa; i <= zz ; i+=aa) {
+    harga = mf_harga(i);
+
+    c = fmaxMin(harga.murah, murah, harga.menengah, menengah, harga.mahal, mahal);
+    sa += i*c;
+    sb += c;
+    }
+    var mm = sa/sb;
+    console.log( 'harga murah : ' + murah );
+    console.log( 'harga menengah : ' + menengah );
+    console.log( 'harga mahal : ' + mahal );
+    console.log( 'harga mamdani : ' + mm );
+
+    harga = mf_harga_singleton();
+    var ss = (harga.murah*murah) + (harga.menengah*menengah)+(harga.mahal*mahal);
+    ss = ss/(murah+menengah+mahal);
+    console.log( 'harga singleton sugeno : ' + ss );
+
+    var str = '<hr>';
+    str += '<h1>Hasil: ';
+    str += '</h1>';
+    str += alDiv( 'info', 'harga mamdani : ' + mm );
+    str += alDiv( 'warning', 'harga sugeno singleton : ' + ss );
+
+    $('#divOut').hide();
+    $('#divOut').html(str);
+    $('#divOut').slideDown('slow');
+    }
+    $(document).ready( function() {
+      console.log('ready');
+      $('#btnProses').click( klik_proses );
+    });
+    </script>
+  </body>
+</html>
